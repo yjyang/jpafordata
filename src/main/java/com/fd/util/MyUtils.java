@@ -2,7 +2,7 @@ package com.fd.util;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -83,28 +83,68 @@ public final class MyUtils {
 	}
 
 	/**
-	 * 判断是否包含内容
+	 * 判断对象是否为空
 	 * 
+	 * @param obj
+	 * @return
 	 */
-	public final static <T extends Object> boolean isNotEmpty(T str) {
-		return str != null && !str.toString().trim().equals("");
+	@SuppressWarnings("rawtypes")
+	public static boolean isEmpty(Object obj) {
+		if (obj == null) {
+			return true;
+		}
+
+		if (obj.getClass().isArray()) {
+			return Array.getLength(obj) == 0;
+		}
+		if (obj instanceof CharSequence) {
+			return ((CharSequence) obj).length() == 0;
+		}
+		if (obj instanceof Collection) {
+			return ((Collection) obj).isEmpty();
+		}
+		if (obj instanceof Map) {
+			return ((Map) obj).isEmpty();
+		}
+
+		return false;
 	}
 
 	/**
-	 * 判断Map集合是否为空
+	 * 判断对象是否不为空
 	 * 
-	 * @param map
+	 * @param obj
 	 * @return
 	 */
-	public final static <T extends Map<?, ?>> boolean isNotEmpty(T map) {
-		return map != null && map.size() > 0;
+	public static boolean isNotEmpty(Object obj) {
+		return !isEmpty(obj);
+	}
+
+	/**
+	 * 判断对象是否为数组
+	 * 
+	 * @param obj
+	 * @return
+	 */
+	public static boolean isArray(Object obj) {
+		return (obj != null && obj.getClass().isArray());
+	}
+
+	/**
+	 * 判断数组是否为空
+	 * 
+	 * @param array
+	 * @return
+	 */
+	public static boolean isEmpty(Object[] array) {
+		return (array == null || array.length == 0);
 	}
 
 	/**
 	 * 判断数字是否大于零
 	 * 
 	 */
-	public static <T extends Number> boolean isGtZero(T ls) {
+	public static boolean isGtZero(Number ls) {
 		return ls != null && ls.doubleValue() > 0;
 	}
 
@@ -181,7 +221,7 @@ public final class MyUtils {
 					if (isNotEmpty(s)) {
 						list.add(Long.valueOf(s));
 					}
-				} catch (NumberFormatException e) {
+				} catch (Throwable e) {
 					throw new RuntimeException(e);
 				}
 			}
@@ -265,7 +305,7 @@ public final class MyUtils {
 			if (bufferedimage != null) {
 				ImageIO.write(bufferedimage, "gif", file);// 1131.gif是静态的
 			}
-		} catch (IOException e) {
+		} catch (Throwable e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -337,26 +377,6 @@ public final class MyUtils {
 	}
 
 	/**
-	 * 判断集合是否不为空
-	 * 
-	 * @param list
-	 * @return
-	 */
-	public static <T> Boolean isNotEmpty(Collection<T> list) {
-		return list != null && list.size() > 0;
-	}
-
-	/**
-	 * 判断对象数组是否不为空
-	 * 
-	 * @param arr
-	 * @return
-	 */
-	public static <T> Boolean isNotEmpty(T[] arr) {
-		return arr != null && arr.length > 0;
-	}
-
-	/**
 	 * 对页面显示内容进行编码
 	 * 
 	 * @param str
@@ -392,7 +412,9 @@ public final class MyUtils {
 			if (propertys.length == 1) {
 				for (Object ov : vlist) {
 					Object obj = clazz.newInstance();
-					Field fd = clazz.getDeclaredField(propertys[0]);
+
+					Field fd = getfd(clazz, propertys[0]);
+
 					fd.setAccessible(true);
 					if (ov != null) {
 
@@ -426,7 +448,7 @@ public final class MyUtils {
 					Object[] ov = (Object[]) o;
 					Object obj = clazz.newInstance();
 					for (int i = 0; i < propertys.length; i++) {
-						Field fd = clazz.getDeclaredField(propertys[i]);
+						Field fd = getfd(clazz, propertys[i]);
 						fd.setAccessible(true);
 						if (ov[i] != null) {
 							if (ov[i] instanceof BigDecimal) {
@@ -455,14 +477,43 @@ public final class MyUtils {
 								fd.set(obj, ov[i]);
 							}
 						}
+
 					}
+
 					list.add((T) obj);
 				}
 			}
 			return list;
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	/**
+	 * 得到类当中的属性
+	 * 
+	 * @param clazz
+	 *            类型
+	 * @param propertys
+	 *            属性名称
+	 * @return
+	 * @throws NoSuchFieldException
+	 */
+	public static <T> Field getfd(Class<T> clazz, String propertys)
+			throws NoSuchFieldException {
+		Field fd = null;
+		try {
+			fd = clazz.getDeclaredField(propertys);
+		} catch (NoSuchFieldException sfe) {
+			Class<?> superclass = clazz.getSuperclass();
+			if (superclass != null && Object.class != superclass) {
+				fd = superclass.getDeclaredField(propertys);
+			} else {
+				throw new IllegalArgumentException(sfe);
+			}
+
+		}
+		return fd;
 	}
 
 	/**
@@ -595,7 +646,7 @@ public final class MyUtils {
 				for (T t : ts) {
 					list.add((V) m.invoke(t, null));
 				}
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				throw new RuntimeException(e);
 			}
 		}
@@ -627,7 +678,7 @@ public final class MyUtils {
 						list.add((Long) m.invoke(t, null));
 					}
 				}
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				throw new RuntimeException(e);
 			}
 		}
@@ -659,7 +710,7 @@ public final class MyUtils {
 						tts.add((String) m.invoke(t, null));
 					}
 				}
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				throw new RuntimeException(e);
 			}
 		}

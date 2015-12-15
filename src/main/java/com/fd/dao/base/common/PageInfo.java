@@ -1,6 +1,7 @@
 package com.fd.dao.base.common;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -10,7 +11,7 @@ import java.util.List;
  * 
  * @param <T>
  */
-public class PageInfo<T> implements Serializable {
+public final class PageInfo<T> implements Serializable {
 	private static final long serialVersionUID = 909167901620112956L;
 	// 当前页
 	private int curPage = 1;
@@ -21,9 +22,21 @@ public class PageInfo<T> implements Serializable {
 	// 总记录数
 	private long totalCount = 0;
 	// 分页数据集合
-	private List<T> dataList;
+	private List<T> dataList = new ArrayList<T>();
 	// 分页页码信息
 	private PageIndex pageIndex;
+	// 是否有下一页
+	private Boolean isNext = false;
+	// 是否有上一页
+	private Boolean isPrev = false;
+
+	public void setIsNext(Boolean isNext) {
+		this.isNext = isNext;
+	}
+
+	public void setIsPrev(Boolean isPrev) {
+		this.isPrev = isPrev;
+	}
 
 	public PageInfo(int curPage, int pageSize, long totalCount, List<T> dataList) {
 		this.curPage = curPage;
@@ -33,24 +46,16 @@ public class PageInfo<T> implements Serializable {
 		this.totalPage = this.totalCount % this.pageSize == 0 ? this.totalCount
 				/ this.pageSize : this.totalCount / this.pageSize + 1;
 		this.pageIndex = PageIndex.getPageIndex(10, curPage, this.totalPage);
+		this.isNext = this.curPage < this.totalPage;
+		this.isPrev = this.curPage > 1;
 	}
 
-	/**
-	 * 是否有下一页
-	 * 
-	 * @return
-	 */
 	public Boolean getIsNext() {
-		return this.curPage < this.totalPage;
+		return isNext;
 	}
 
-	/**
-	 * 是否有上一页
-	 * 
-	 * @return
-	 */
 	public boolean getIsPrev() {
-		return this.curPage > 1;
+		return isPrev;
 	}
 
 	public int getCurPage() {

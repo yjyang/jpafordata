@@ -21,6 +21,7 @@ import com.fd.dao.base.common.PageInfo;
 import com.fd.dao.base.em.MergeType;
 import com.fd.dao.base.em.Operators;
 import com.fd.dao.base.em.Sentences;
+import com.fd.util.MyUtils;
 
 public abstract class CommonDao implements ICommonDao {
 	private static final long serialVersionUID = -5469780272067822450L;
@@ -346,7 +347,7 @@ public abstract class CommonDao implements ICommonDao {
 					String p = targetProperty[0];
 					for (Object o : data.getDataList()) {
 						T obj = (T) clazz.newInstance();
-						Field fd = clazz.getDeclaredField(p);
+						Field fd = MyUtils.getfd(clazz, p);
 						fd.setAccessible(true);
 						fd.set(obj, o);
 						dataList.add(obj);
@@ -357,8 +358,7 @@ public abstract class CommonDao implements ICommonDao {
 						Object[] oss = (Object[]) os;
 						T obj = (T) clazz.newInstance();
 						for (int i = 0; i < targetProperty.length; i++) {
-							Field fd = clazz
-									.getDeclaredField(targetProperty[i]);
+							Field fd = MyUtils.getfd(clazz, targetProperty[i]);
 							fd.setAccessible(true);
 							if (oss[i] instanceof Number) {
 								Number nb = (Number) oss[i];
@@ -421,7 +421,7 @@ public abstract class CommonDao implements ICommonDao {
 				return data;
 			}
 			return new PageInfo<T>(1, 20, 0, new ArrayList());
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			throw new RuntimeException(e);
 		}
 	}

@@ -66,7 +66,7 @@ public final class Condition implements Serializable {
 		super();
 		this.property = property;
 		this.oper = oper;
-		this.value = value;
+		likehandler(oper, value);
 		this.sw = sw;
 		this.cplx = cplx;
 	}
@@ -76,7 +76,7 @@ public final class Condition implements Serializable {
 		super();
 		this.property = property;
 		this.oper = oper;
-		this.value = value;
+		likehandler(oper, value);
 		this.sw = sw;
 		this.table = table;
 		this.cplx = cplx;
@@ -91,7 +91,7 @@ public final class Condition implements Serializable {
 		super();
 		this.property = property;
 		this.oper = oper;
-		this.value = value;
+		likehandler(oper, value);
 		this.sw = new SqlWhere(SqlOp.OR, orConditions);
 	}
 
@@ -108,7 +108,7 @@ public final class Condition implements Serializable {
 		super();
 		this.property = property;
 		this.oper = oper;
-		this.value = value;
+		likehandler(oper, value);
 		this.funName = funName;
 		this.sw = new SqlWhere(SqlOp.OR, orConditions);
 		this.isPre = isPre;
@@ -126,7 +126,7 @@ public final class Condition implements Serializable {
 		super();
 		this.property = property;
 		this.oper = oper;
-		this.value = value;
+		likehandler(oper, value);
 		this.table = table;
 	}
 
@@ -147,7 +147,7 @@ public final class Condition implements Serializable {
 		super();
 		this.property = property;
 		this.oper = oper;
-		this.value = value;
+		likehandler(oper, value);
 		this.cdType = CdType.FUN;
 		this.funName = funName;
 	}
