@@ -4,7 +4,7 @@
 
 	<groupId>com.fd</groupId>
 	<artifactId>jpafordata</artifactId>
-	<version>3.7.9</version>
+	<version>3.8.0</version>
 	<packaging>jar</packaging>
 	<name>jpafordata</name>
 	<url>http://maven.apache.org</url>
