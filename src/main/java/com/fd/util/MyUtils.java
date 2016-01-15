@@ -716,4 +716,50 @@ public final class MyUtils {
 		}
 		return tts;
 	}
+
+	/**
+	 * 数字前面补零
+	 * 
+	 * @param iv
+	 *            初始值 1
+	 * @param len
+	 *            总长度 3
+	 * @return 001
+	 */
+	public static String zeroFill(int iv, int len) {
+		String v = String.valueOf(iv);
+		if (v.length() < len) {
+			StringBuilder bd = new StringBuilder(v);
+			for (int i = 0; i < len - v.length(); i++) {
+				bd.insert(0, '0');
+			}
+			return bd.toString();
+		} else {
+			return v;
+		}
+	}
+
+	/**
+	 * 去掉数字前面所有的0
+	 * 
+	 * @param 目标
+	 * @return
+	 */
+	public static String spzr(String ss) {
+		StringBuilder sb = new StringBuilder();
+		if (ss != null) {
+			char[] chs = ss.toCharArray();
+			boolean f = false;
+			for (char c : chs) {
+				if (c != '0' || f) {
+					if (!f) {
+						f = true;
+					}
+					sb.append(c);
+				}
+			}
+		}
+		return sb.toString();
+	}
+
 }
