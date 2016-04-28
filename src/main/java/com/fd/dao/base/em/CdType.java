@@ -10,7 +10,6 @@ public enum CdType {
 	/**
 	 * 原生类型
 	 * 
-	 * set amount=amount+1
 	 */
 	OG,
 	/**
