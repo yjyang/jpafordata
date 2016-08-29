@@ -370,7 +370,10 @@ public final class Condition implements Serializable {
 			for (Condition e : conditions) {
 				condi.add(e);
 			}
+			return condi;
+		} else {
+			return Collections.emptySet();
 		}
-		return Collections.emptySet();
+
 	}
 }
