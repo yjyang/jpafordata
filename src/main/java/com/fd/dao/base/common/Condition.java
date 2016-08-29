@@ -1,6 +1,7 @@
 package com.fd.dao.base.common;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -364,12 +365,12 @@ public final class Condition implements Serializable {
 	 * @return
 	 */
 	public final static Set<Condition> getConditions(Condition... conditions) {
-		Set<Condition> condi = new HashSet<Condition>();
 		if (MyUtils.isNotEmpty(conditions)) {
+			Set<Condition> condi = new HashSet<Condition>(conditions.length);
 			for (Condition e : conditions) {
 				condi.add(e);
 			}
 		}
-		return condi;
+		return Collections.emptySet();
 	}
 }

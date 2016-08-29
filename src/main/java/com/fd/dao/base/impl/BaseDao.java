@@ -36,7 +36,7 @@ public abstract class BaseDao<POJO> extends CommonDao implements IBaseDao<POJO> 
 
 	private static final long serialVersionUID = 3225031490731385710L;
 
-	private static String getWhereSql(SqlWhere... sws) {
+	private String getWhereSql(SqlWhere... sws) {
 		if (MyUtils.isNotEmpty(sws)) {
 			StringBuilder sbd = new StringBuilder("  where  ");
 			int ix = 0;
@@ -73,22 +73,24 @@ public abstract class BaseDao<POJO> extends CommonDao implements IBaseDao<POJO> 
 									.getOper().equals(Operators.NOT_EQ))
 									&& !MyUtils.isNotEmpty(c.getValue())) {
 								if (c.getOper().equals(Operators.EQ)) {
-									sbd.append(" (");
-
+									if (isStr(c.getProperty())) {
+										sbd.append(" (");
+									}
 									sbd.append(alias)
 											.append(".")
 											.append(c.getProperty())
 											.append(Sentences.IS_NULL
 													.getValue());
-
-									sbd.append(Sentences.OR.getValue());
-
-									sbd.append(alias).append(".")
-											.append(c.getProperty())
-											.append(c.getOper().getValue())
-											.append("''");
-
-									sbd.append(")  ");
+									if (isStr(c.getProperty())) {
+										sbd.append(Sentences.OR.getValue());
+										sbd.append(alias).append(".")
+												.append(c.getProperty())
+												.append(c.getOper().getValue())
+												.append("''");
+									}
+									if (isStr(c.getProperty())) {
+										sbd.append(")  ");
+									}
 
 								} else {
 
@@ -97,13 +99,14 @@ public abstract class BaseDao<POJO> extends CommonDao implements IBaseDao<POJO> 
 											.append(c.getProperty())
 											.append(Sentences.IS_NOT_NULL
 													.getValue());
+									if (isStr(c.getProperty())) {
+										sbd.append(Sentences.AND.getValue());
 
-									sbd.append(Sentences.AND.getValue());
-
-									sbd.append(alias).append(".")
-											.append(c.getProperty())
-											.append(c.getOper().getValue())
-											.append("''");
+										sbd.append(alias).append(".")
+												.append(c.getProperty())
+												.append(c.getOper().getValue())
+												.append("''");
+									}
 
 								}
 
@@ -180,7 +183,7 @@ public abstract class BaseDao<POJO> extends CommonDao implements IBaseDao<POJO> 
 			qr.setMaxResults(pageSize);
 			return qr.getResultList();
 		}
-		return Collections.EMPTY_LIST;
+		return Collections.emptyList();
 	}
 
 	private Query groupbySub(Set<Condition> conditions,
@@ -1058,7 +1061,7 @@ public abstract class BaseDao<POJO> extends CommonDao implements IBaseDao<POJO> 
 	 * @param conditions
 	 * @return
 	 */
-	protected static String getWhereSql(String alias, Set<Condition> conditions) {
+	protected String getWhereSql(String alias, Set<Condition> conditions) {
 
 		return setconditions(alias, conditions);
 	}
@@ -1074,7 +1077,7 @@ public abstract class BaseDao<POJO> extends CommonDao implements IBaseDao<POJO> 
 		return setconditions(alias, conditions);
 	}
 
-	private static String setconditions(String alias, Set<Condition> conditions) {
+	private String setconditions(String alias, Set<Condition> conditions) {
 		if (conditions != null && conditions.size() > 0) {
 			StringBuilder bufWhere = new StringBuilder(" where  ");
 			Iterator<Condition> ite = conditions.iterator();
@@ -1121,23 +1124,28 @@ public abstract class BaseDao<POJO> extends CommonDao implements IBaseDao<POJO> 
 				} else {
 					if (cd.getCdType().equals(CdType.VL)) {
 						if (cd.getOper().equals(Operators.EQ)) {
-							bufWhere.append("(");
-							bufWhere.append(alias).append(".")
-									.append(cd.getProperty());
-							bufWhere.append(cd.getOper().getValue());
-							bufWhere.append("''").append(
-									Sentences.OR.getValue());
+							if (isStr(cd.getProperty())) {
+								bufWhere.append("(");
+								bufWhere.append(alias).append(".")
+										.append(cd.getProperty());
+								bufWhere.append(cd.getOper().getValue());
+								bufWhere.append("''").append(
+										Sentences.OR.getValue());
+							}
 							bufWhere.append(alias).append(".")
 									.append(cd.getProperty());
 							bufWhere.append(Sentences.IS_NULL.getValue());
-							bufWhere.append(")");
+							if (isStr(cd.getProperty())) {
+								bufWhere.append(")");
+							}
 						} else if (cd.getOper().equals(Operators.NOT_EQ)) {
-
-							bufWhere.append(alias).append(".")
-									.append(cd.getProperty());
-							bufWhere.append(cd.getOper().getValue());
-							bufWhere.append("''").append(
-									Sentences.AND.getValue());
+							if (isStr(cd.getProperty())) {
+								bufWhere.append(alias).append(".")
+										.append(cd.getProperty());
+								bufWhere.append(cd.getOper().getValue());
+								bufWhere.append("''").append(
+										Sentences.AND.getValue());
+							}
 							bufWhere.append(alias).append(".")
 									.append(cd.getProperty());
 							bufWhere.append(Sentences.IS_NOT_NULL.getValue());
@@ -1215,6 +1223,21 @@ public abstract class BaseDao<POJO> extends CommonDao implements IBaseDao<POJO> 
 					}
 				}
 			}
+		}
+	}
+
+	/**
+	 * 属性是否String 类型
+	 * 
+	 * @param property
+	 * @return
+	 */
+	private boolean isStr(String property) {
+		try {
+			Field fd = clazz.getDeclaredField(property.trim());
+			return fd.getType() == String.class;
+		} catch (Exception e) {
+			throw new IllegalArgumentException(property + "属性不合法！！！");
 		}
 	}
 
