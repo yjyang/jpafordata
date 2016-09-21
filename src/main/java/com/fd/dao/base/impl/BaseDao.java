@@ -36,16 +36,19 @@ public abstract class BaseDao<POJO> extends CommonDao implements IBaseDao<POJO> 
 
 	private static final long serialVersionUID = 3225031490731385710L;
 
-	private String getWhereSql(SqlWhere... sws) {
+	private String getWhereSql(SqlOp so, SqlWhere... sws) {
 		if (MyUtils.isNotEmpty(sws)) {
-			StringBuilder sbd = new StringBuilder("  where  ");
+			if (so == null) {
+				throw new IllegalArgumentException("关系条件SqlOp不能为空..");
+			}
+			StringBuilder sbd = new StringBuilder(Sentences.WHERE.getValue());
 			int ix = 0;
 			for (int i = 0; i < sws.length; i++) {
 				SqlWhere sw = sws[i];
 				if (MyUtils.isNotEmpty(sw.getConditions())) {
 					Iterator<Condition> ite = Arrays.asList(sw.getConditions())
 							.iterator();
-					if (sw.getSqlOp().equals(SqlOp.OR)) {
+					if (sw.getSqlOp().equals(SqlOp.OR) || SqlOp.OR.equals(so)) {
 
 						sbd.append("(");
 
@@ -65,8 +68,9 @@ public abstract class BaseDao<POJO> extends CommonDao implements IBaseDao<POJO> 
 							sbd.append(alias).append(".")
 									.append(c.getProperty())
 									.append(c.getOper().getValue()).append("?")
-									.append(ix + 1).append(" and ").append("?")
-									.append(++ix + 1);
+									.append(ix + 1)
+									.append(Sentences.AND.getValue())
+									.append("?").append(++ix + 1);
 						} else {
 
 							if ((c.getOper().equals(Operators.EQ) || c
@@ -124,11 +128,11 @@ public abstract class BaseDao<POJO> extends CommonDao implements IBaseDao<POJO> 
 						ix++;
 					}
 
-					if (sw.getSqlOp().equals(SqlOp.OR)) {
+					if (sw.getSqlOp().equals(SqlOp.OR) || SqlOp.OR.equals(so)) {
 						sbd.append(")");
 					}
 					if (i < sws.length - 1) {
-						sbd.append(" and ");
+						sbd.append(so.getValue());
 					}
 				}
 
@@ -766,8 +770,19 @@ public abstract class BaseDao<POJO> extends CommonDao implements IBaseDao<POJO> 
 	@Override
 	public List<POJO> getListBySql(int curPage, int pageSize, SqlWhere[] sws,
 			LinkedHashMap<String, String> orderby, String... props) {
+		return complexqery(curPage, pageSize, sws, SqlOp.AND, orderby, props);
+	}
+
+	@Override
+	public List<POJO> getListBySql(int curPage, int pageSize, SqlWhere[] sws,
+			SqlOp so, LinkedHashMap<String, String> orderby, String... props) {
+		return complexqery(curPage, pageSize, sws, so, orderby, props);
+	}
+
+	private List<POJO> complexqery(int curPage, int pageSize, SqlWhere[] sws,
+			SqlOp so, LinkedHashMap<String, String> orderby, String... props) {
 		StringBuilder bd = new StringBuilder(getSelectJPQL(props));
-		bd.append(getWhereSql(sws));
+		bd.append(getWhereSql(so, sws));
 		bd.append(getOrderbyJpSql(orderby));
 		Query qr = sqlAddcondtion(sws, bd);
 
@@ -781,8 +796,17 @@ public abstract class BaseDao<POJO> extends CommonDao implements IBaseDao<POJO> 
 
 	@Override
 	public Long getCountBySql(SqlWhere[] sws) {
+		return complexqc(SqlOp.AND, sws);
+	}
+
+	@Override
+	public Long getCountBySql(SqlOp so, SqlWhere[] sws) {
+		return complexqc(so, sws);
+	}
+
+	private Long complexqc(SqlOp so, SqlWhere[] sws) {
 		StringBuilder sqlbuf = getselectCountSqlPre();
-		sqlbuf.append(getWhereSql(sws));
+		sqlbuf.append(getWhereSql(so, sws));
 		Query qr = sqlAddcondtion(sws, sqlbuf);
 		Number o = (Number) qr.getSingleResult();
 		return o.longValue();
@@ -794,6 +818,14 @@ public abstract class BaseDao<POJO> extends CommonDao implements IBaseDao<POJO> 
 			String... props) {
 		return new PageInfo<POJO>(curPage, pageSize, getCountBySql(sws),
 				getListBySql(curPage, pageSize, sws, orderby, props));
+	}
+
+	@Override
+	public PageInfo<POJO> getPageinfoBySql(int curPage, int pageSize,
+			SqlWhere[] sws, SqlOp so, LinkedHashMap<String, String> orderby,
+			String... props) {
+		return new PageInfo<POJO>(curPage, pageSize, getCountBySql(so, sws),
+				getListBySql(curPage, pageSize, sws, so, orderby, props));
 	}
 
 	/***********

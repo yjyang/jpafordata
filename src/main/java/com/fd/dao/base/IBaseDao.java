@@ -11,6 +11,7 @@ import com.fd.dao.base.common.Condition;
 import com.fd.dao.base.common.OrderBy;
 import com.fd.dao.base.common.PageInfo;
 import com.fd.dao.base.common.SqlWhere;
+import com.fd.dao.base.em.SqlOp;
 
 /***
  * 通用DAO,封装所有底层数据库访问细节-采用JPA实现
@@ -490,5 +491,42 @@ public interface IBaseDao<POJO> extends Serializable, ICommonDao {
 	 * @return
 	 */
 	POJO get(String propertyName, Serializable value, String... c);
+
+	/**
+	 * 支持各种复杂逻辑
+	 * 
+	 * @param curPage
+	 * @param pageSize
+	 * @param sws
+	 * @param so
+	 * @param orderby
+	 * @param props
+	 * @return
+	 */
+	List<POJO> getListBySql(int curPage, int pageSize, SqlWhere[] sws,
+			SqlOp so, LinkedHashMap<String, String> orderby, String... props);
+
+	/**
+	 * 支持各种复杂逻辑
+	 * 
+	 * @param so
+	 * @param sws
+	 * @return
+	 */
+	Long getCountBySql(SqlOp so, SqlWhere[] sws);
+
+	/**
+	 * 支持各种复杂逻辑
+	 * 
+	 * @param curPage
+	 * @param pageSize
+	 * @param sws
+	 * @param so
+	 * @param orderby
+	 * @param props
+	 * @return
+	 */
+	PageInfo<POJO> getPageinfoBySql(int curPage, int pageSize, SqlWhere[] sws,
+			SqlOp so, LinkedHashMap<String, String> orderby, String... props);
 
 }
