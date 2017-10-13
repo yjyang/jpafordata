@@ -698,7 +698,7 @@ public abstract class BaseDao<POJO> extends CommonDao implements IBaseDao<POJO> 
 	@Override
 	public List<POJO> getList(LinkedHashMap<String, String> orderby,
 			String... propertys) {
-		return getList(1, Integer.MAX_VALUE, null, orderby);
+		return getList(1, Integer.MAX_VALUE, null, orderby,propertys);
 	}
 
 	@Override
